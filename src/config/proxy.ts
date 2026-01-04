@@ -61,8 +61,9 @@ const ProxyConfig: ProxyConfig = {
 };
 
 // Helper functions to get full proxy URLs
-export function getProxyHttpUrl(dcId: number, path: string): string {
-  return `${ProxyConfig.baseUrl}${ProxyConfig.httpPath}/${dcId}/${path}`;
+export function getProxyHttpUrl(dcId: number, path: string, isDownload?: boolean): string {
+  const downloadParam = isDownload ? '&download=1' : '';
+  return `${ProxyConfig.baseUrl}${ProxyConfig.httpPath}?dc=${dcId}&path=${encodeURIComponent(path)}${downloadParam}`;
 }
 
 export function getProxyWsUrl(dcId: number, connectionType: string, premium?: boolean): string {

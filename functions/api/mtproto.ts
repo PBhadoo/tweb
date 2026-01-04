@@ -1,9 +1,7 @@
 // Cloudflare Pages Function: HTTP MTProto Proxy
-// Path: /api/mtproto/[dcId]/[...path]
+// Path: /api/mtproto
 
-interface Env {
-  // Add any environment variables here if needed
-}
+interface Env {}
 
 // Telegram server endpoints
 const DC_SERVERS: Record<number, string> = {
@@ -30,7 +28,7 @@ const corsHeaders: Record<string, string> = {
 };
 
 export const onRequest: PagesFunction<Env> = async(context) => {
-  const {request, params} = context;
+  const {request} = context;
 
   // Handle CORS preflight
   if(request.method === 'OPTIONS') {
@@ -38,26 +36,25 @@ export const onRequest: PagesFunction<Env> = async(context) => {
   }
 
   try {
-    // Parse DC ID and path from URL
-    const dcId = parseInt(params.dcId as string, 10);
-    const pathParts = params.path as string[] | undefined;
-    const path = pathParts ? pathParts.join('/') : 'apiw1';
+    const url = new URL(request.url);
+
+    // Parse DC ID and path from query params
+    const dcId = parseInt(url.searchParams.get('dc') || '2', 10);
+    const path = url.searchParams.get('path') || 'apiw1';
+    const isDownload = url.searchParams.get('download') === '1';
 
     if(!dcId || dcId < 1 || dcId > 5) {
-      return new Response(JSON.stringify({error: 'Invalid DC ID'}), {
+      return new Response(JSON.stringify({error: 'Invalid DC ID', dcId}), {
         status: 400,
         headers: {'Content-Type': 'application/json', ...corsHeaders}
       });
     }
 
-    // Determine if this is a download request
-    const url = new URL(request.url);
-    const isDownload = url.searchParams.get('download') === '1';
     const servers = isDownload ? DC_SERVERS_DOWNLOAD : DC_SERVERS;
     const host = servers[dcId];
 
     if(!host) {
-      return new Response(JSON.stringify({error: 'DC not found'}), {
+      return new Response(JSON.stringify({error: 'DC not found', dcId}), {
         status: 404,
         headers: {'Content-Type': 'application/json', ...corsHeaders}
       });
@@ -70,8 +67,7 @@ export const onRequest: PagesFunction<Env> = async(context) => {
     const requestInit: RequestInit = {
       method: request.method,
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Host': host
+        'Content-Type': 'application/octet-stream'
       }
     };
 

@@ -108,7 +108,7 @@ export class DcConfigurator {
     if(ProxyConfig.enabled) {
       const path = Modes.test ? 'apiw_test1' : 'apiw1';
       const isDownload = connectionType !== 'client';
-      chosenServer = getProxyHttpUrl(dcId, path) + (isDownload ? '?download=1' : '');
+      chosenServer = getProxyHttpUrl(dcId, path, isDownload);
     } else if(Modes.ssl || !Modes.http) {
       const suffix = getTelegramConnectionSuffix(connectionType);
       const subdomain = this.sslSubdomains[dcId - 1] + suffix;
