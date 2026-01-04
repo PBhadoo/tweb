@@ -1,10 +1,5 @@
 // Cloudflare Pages Function: HTTP MTProto Proxy
 // Path: /api/mtproto/[dcId]/[...path]
-// 
-// Note: Install @cloudflare/workers-types for TypeScript support:
-// pnpm add -D @cloudflare/workers-types
-
-// @ts-nocheck - Cloudflare Workers types are separate from the main project
 
 interface Env {
   // Add any environment variables here if needed
@@ -27,31 +22,31 @@ const DC_SERVERS_DOWNLOAD: Record<number, string> = {
   5: 'flora-1.web.telegram.org'
 };
 
-export const onRequest: PagesFunction<Env> = async (context) => {
-  const { request, params } = context;
-  
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+// CORS headers
+const corsHeaders: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export const onRequest: PagesFunction<Env> = async(context) => {
+  const {request, params} = context;
 
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  if(request.method === 'OPTIONS') {
+    return new Response(null, {headers: corsHeaders});
   }
 
   try {
     // Parse DC ID and path from URL
     const dcId = parseInt(params.dcId as string, 10);
-    const pathParts = params.path as string[];
+    const pathParts = params.path as string[] | undefined;
     const path = pathParts ? pathParts.join('/') : 'apiw1';
-    
-    if (!dcId || dcId < 1 || dcId > 5) {
-      return new Response(JSON.stringify({ error: 'Invalid DC ID' }), {
+
+    if(!dcId || dcId < 1 || dcId > 5) {
+      return new Response(JSON.stringify({error: 'Invalid DC ID'}), {
         status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        headers: {'Content-Type': 'application/json', ...corsHeaders}
       });
     }
 
@@ -61,10 +56,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const servers = isDownload ? DC_SERVERS_DOWNLOAD : DC_SERVERS;
     const host = servers[dcId];
 
-    if (!host) {
-      return new Response(JSON.stringify({ error: 'DC not found' }), {
+    if(!host) {
+      return new Response(JSON.stringify({error: 'DC not found'}), {
         status: 404,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        headers: {'Content-Type': 'application/json', ...corsHeaders}
       });
     }
 
@@ -72,18 +67,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const targetUrl = `https://${host}/${path}`;
 
     // Forward the request to Telegram
-    const response = await fetch(targetUrl, {
+    const requestInit: RequestInit = {
       method: request.method,
       headers: {
         'Content-Type': 'application/octet-stream',
         'Host': host
-      },
-      body: request.method === 'POST' ? await request.arrayBuffer() : undefined
-    });
+      }
+    };
+
+    if(request.method === 'POST') {
+      requestInit.body = await request.arrayBuffer();
+    }
+
+    const response = await fetch(targetUrl, requestInit);
 
     // Return the response with CORS headers
     const responseBody = await response.arrayBuffer();
-    
+
     return new Response(responseBody, {
       status: response.status,
       headers: {
@@ -91,12 +91,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         ...corsHeaders
       }
     });
-
-  } catch (error) {
+  } catch(error) {
     console.error('Proxy error:', error);
-    return new Response(JSON.stringify({ error: 'Proxy error', details: String(error) }), {
+    return new Response(JSON.stringify({error: 'Proxy error', details: String(error)}), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      headers: {'Content-Type': 'application/json', ...corsHeaders}
     });
   }
 };
