@@ -1,14 +1,4 @@
 # Cloudflare Pages Configuration
 name = "telegram-web-k"
 compatibility_date = "2025-11-17"
-
-[build]
-command = "pnpm run build"
-output_directory = "dist"
-
-[build.environment]
-NODE_VERSION = "18"
-
-# Pages Functions configuration
-[[pages.functions]]
-path = "/api/*"
+pages_build_output_dir = "dist"

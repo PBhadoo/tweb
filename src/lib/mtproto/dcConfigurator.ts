@@ -103,7 +103,7 @@ export class DcConfigurator {
     }
 
     let chosenServer: string;
-    
+
     // Use proxy if enabled
     if(ProxyConfig.enabled) {
       const path = Modes.test ? 'apiw_test1' : 'apiw1';

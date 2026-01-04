@@ -10,46 +10,46 @@ export interface ProxyConfig {
   baseUrl: string;
   // HTTP API proxy path
   httpPath: string;
-  // WebSocket proxy path  
+  // WebSocket proxy path
   wsPath: string;
 }
 
 // Check URL parameter or localStorage for proxy settings
 function getProxyEnabled(): boolean {
   // URL parameter takes precedence
-  if (typeof location !== 'undefined') {
-    if (location.search.indexOf('proxy=1') > 0) return true;
-    if (location.search.indexOf('proxy=0') > 0) return false;
+  if(typeof location !== 'undefined') {
+    if(location.search.indexOf('proxy=1') > 0) return true;
+    if(location.search.indexOf('proxy=0') > 0) return false;
   }
-  
+
   // Check localStorage
   try {
     const stored = localStorage.getItem('tweb_proxy_enabled');
-    if (stored !== null) return stored === '1';
-  } catch (e) {}
-  
+    if(stored !== null) return stored === '1';
+  } catch(e) {}
+
   // Default: FORCED enabled for restricted network environments
   return true;
 }
 
 function getProxyBaseUrl(): string {
   // Check URL parameter
-  if (typeof location !== 'undefined') {
+  if(typeof location !== 'undefined') {
     const match = location.search.match(/proxyUrl=([^&]+)/);
-    if (match) return decodeURIComponent(match[1]);
+    if(match) return decodeURIComponent(match[1]);
   }
-  
+
   // Check localStorage
   try {
     const stored = localStorage.getItem('tweb_proxy_url');
-    if (stored) return stored;
-  } catch (e) {}
-  
+    if(stored) return stored;
+  } catch(e) {}
+
   // Default: same origin (assumes app is deployed on Cloudflare Pages)
-  if (typeof location !== 'undefined') {
+  if(typeof location !== 'undefined') {
     return location.origin;
   }
-  
+
   return '';
 }
 
@@ -75,14 +75,14 @@ export function setProxyEnabled(enabled: boolean): void {
   ProxyConfig.enabled = enabled;
   try {
     localStorage.setItem('tweb_proxy_enabled', enabled ? '1' : '0');
-  } catch (e) {}
+  } catch(e) {}
 }
 
 export function setProxyBaseUrl(url: string): void {
   ProxyConfig.baseUrl = url;
   try {
     localStorage.setItem('tweb_proxy_url', url);
-  } catch (e) {}
+  } catch(e) {}
 }
 
 export default ProxyConfig;
