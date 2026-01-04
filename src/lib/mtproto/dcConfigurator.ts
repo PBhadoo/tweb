@@ -12,6 +12,7 @@
 import MTTransport, {MTConnectionConstructable} from './transports/transport';
 import Modes from '../../config/modes';
 import App from '../../config/app';
+import ProxyConfig, {getProxyWsUrl, getProxyHttpUrl} from '../../config/proxy';
 import indexOfAndSplice from '../../helpers/array/indexOfAndSplice';
 import HTTP from './transports/http';
 import Socket from './transports/websocket';
@@ -43,6 +44,11 @@ export function getTelegramConnectionSuffix(connectionType: ConnectionType) {
 export function constructTelegramWebSocketUrl(dcId: DcId, connectionType: ConnectionType, premium?: boolean) {
   if(!import.meta.env.VITE_MTPROTO_HAS_WS) {
     return;
+  }
+
+  // Use proxy if enabled
+  if(ProxyConfig.enabled) {
+    return getProxyWsUrl(dcId, connectionType, premium);
   }
 
   const suffix = getTelegramConnectionSuffix(connectionType);
@@ -97,7 +103,13 @@ export class DcConfigurator {
     }
 
     let chosenServer: string;
-    if(Modes.ssl || !Modes.http) {
+    
+    // Use proxy if enabled
+    if(ProxyConfig.enabled) {
+      const path = Modes.test ? 'apiw_test1' : 'apiw1';
+      const isDownload = connectionType !== 'client';
+      chosenServer = getProxyHttpUrl(dcId, path) + (isDownload ? '?download=1' : '');
+    } else if(Modes.ssl || !Modes.http) {
       const suffix = getTelegramConnectionSuffix(connectionType);
       const subdomain = this.sslSubdomains[dcId - 1] + suffix;
       const path = Modes.test ? 'apiw_test1' : 'apiw1';

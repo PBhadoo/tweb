@@ -1,0 +1,11 @@
+name = "telegram-ws-proxy"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# Enable WebSocket support
+[vars]
+
+# Workers KV namespace (optional, for rate limiting)
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "your-kv-namespace-id"

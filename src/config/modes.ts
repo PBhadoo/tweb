@@ -11,15 +11,18 @@
 
 import type {TransportType} from '../lib/mtproto/dcConfigurator';
 
+// FORCED HTTP-only mode for restricted network environments (proxy mode)
+const forceHttpMode = true; // Always force HTTP mode
+
 const Modes = {
   test: location.search.indexOf('test=1') > 0/*  || true */,
   debug: location.search.indexOf('debug=1') > 0,
-  http: false,
-  ssl: true, // location.search.indexOf('ssl=1') > 0 || location.protocol === 'https:' && location.search.indexOf('ssl=0') === -1,
+  http: true, // FORCED: Always use HTTP
+  ssl: true, // Force SSL for HTTPS-only mode
   asServiceWorker: !!import.meta.env.VITE_MTPROTO_SW,
-  transport: 'websocket' as TransportType,
+  transport: 'https' as TransportType, // FORCED: Always use HTTPS transport
   noSharedWorker: location.search.indexOf('noSharedWorker=1') > 0,
-  multipleTransports: !!(import.meta.env.VITE_MTPROTO_AUTO && import.meta.env.VITE_MTPROTO_HAS_HTTP && import.meta.env.VITE_MTPROTO_HAS_WS) && location.search.indexOf('noMultipleTransports=1') === -1,
+  multipleTransports: false, // FORCED: Disable multiple transports, HTTP only
   noPfs: true || location.search.indexOf('noPfs=1') > 0
 };
 
